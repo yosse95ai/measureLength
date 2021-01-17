@@ -1,8 +1,8 @@
 #pragma once
-#include<iostream>              //std�̗��p
-#include<unordered_map>         //�����Ȃ��A�z�z��̗��p
+#include<iostream>      
+#include<unordered_map> 
 #include <stdexcept>
-#include<vector>                //Vector�^�̗��p
+#include<vector>                
 #include <opencv2/opencv.hpp>	// OpenCV
 #include <OpenNI.h>				// OpenNI
 #include <time.h>

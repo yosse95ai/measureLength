@@ -3,42 +3,38 @@
 class MouseEvent
 {
 public:
-	// �}�E�X�ʒu���X�V
 	void change(int x, int y, int eventType)
 	{
 		_x = x;
 		_y = y;
 		_eventType = eventType;
 	}
-	// �}�E�X�C�x���g�̃^�C�v���擾����
 	int getEventType()
 	{
 		return _eventType;
 	}
-	// �}�E�X��x���W
 	int getX()
 	{
 		return _x;
 	}
-	// �}�E�X��y���W
 	int getY()
 	{
 		return _y;
 	}
 
 private:
-	int _x, _y;		// �}�E�X���W( x, y )
-	int _eventType; // �}�E�X�C�x���g�̃^�C�v
+	int _x, _y;		// click point
+	int _eventType; // mouse event type
 };
 
-// �R�[���o�b�N�֐�
+// mouse callback
 void CallBackFunction(int eventType, int x, int y, int flags, void* userdata)
 {
 	MouseEvent* m = static_cast<MouseEvent*>(userdata);
 	m->change(x, y, eventType);
 }
 
-// ���l�̌������낦�ăR���\�[���o��
+// digit aligment
 void DigitAligment(int val, int num = 3, bool endl = false)
 {
 	std::cout << std::setw(num) << std::setfill(' ') << val;
@@ -70,38 +66,36 @@ public:
 		openni::OpenNI::shutdown();
 	}
 	/// <summary>
-	/// �Z���T�[�̏������֐�
+	/// initialize depth sensor
 	/// </summary>
 	void depthInitialize()
 	{
-		// �f�o�C�X���擾
+		// open depth sensor
 		if (device.open(openni::ANY_DEVICE) != openni::STATUS_OK) {
 			throw std::runtime_error("openni::Device::open() failed.");
 		}
-		// �J���[�X�g���[����L���ɂ���
+		// create color stream
 		colorStream.create(device, openni::SENSOR_COLOR);
-		// Depth�X�g���[����L���ɂ���
+		// create depth stream
 		depthStream.create(device, openni::SENSOR_DEPTH);
 
 		changeResolutioin(colorStream);
 		changeResolutioin(depthStream);
 
-		// �f�o�C�X��IMAGE_REGISTRATION_DEPTH_TO_COLOR�ɑΉ����Ă��邩
+		// change IMAGE_REGISTRATION_DEPTH_TO_COLOR mode
 		if (device.isImageRegistrationModeSupported(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR)) {
-			// �Ή����Ă���Ȃ�Z�b�g����
 			device.setImageRegistrationMode(openni::IMAGE_REGISTRATION_DEPTH_TO_COLOR);
 		}
 
-		// �X�g���[���̊J�n
+		// start stream
 		colorStream.start();
 		depthStream.start();
 	}
 
 	void updateColorFrame()
 	{
-		// �X�V���ꂽ�t���[�����擾����
+		// read color frame
 		colorStream.readFrame(&colorFrame);
-		// �t���[���f�[�^��\���ł���`�ɕϊ�����
 		showColorStream(colorFrame, colorImage);
 		lineDesc(colorImage);
 
@@ -109,9 +103,8 @@ public:
 
 	void updateDepthFrame()
 	{
-		// �X�V���ꂽ�t���[�����擾����
+		// read depth frame
 		depthStream.readFrame(&depthFrame);
-		// �t���[���f�[�^��\���ł���`�ɕϊ�����
 		showDepthStream(depthFrame, depthImage);
 	}
 
@@ -137,10 +130,8 @@ private:
 		stream.setVideoMode(mode);
 	}
 	/// <summary>
-	/// �J���[�X�g���[����OpenCV�ŕ\���ł���`�ɂ���
+	/// カラー画像をOpenCVで表示できるように変換
 	/// </summary>
-	/// <param name="colorFrame"></param>
-	/// <returns>cv::Mat�^�̃t���[��</returns>
 	void showColorStream(const openni::VideoFrameRef colorFrame, cv::Mat& colorImage)
 	{
 		// OpenCV�̌`�ɂ���
@@ -153,10 +144,8 @@ private:
 	}
 
 	/// <summary>
-	/// Depth�X�g���[����\���ł���`���ɕϊ�
+	/// Depth画像をOpenCVで表示できるように変換
 	/// </summary>
-	/// <param name="depthFrame"></param>
-	/// <param name="depthImage"></param>
 	void showDepthStream(const openni::VideoFrameRef& depthFrame, cv::Mat& depthImage)
 	{
 		// �����f�[�^���摜������(16bits)
@@ -170,10 +159,8 @@ private:
 	}
 
 	/// <summary>
-	/// ���W�̉��s�����߂�
+	/// クリック座標の深度を取得
 	/// </summary>
-	/// <param name="depthImage"></param>
-	/// <param name="depthFrame"></param>
 	unsigned short showPointDistance(const openni::VideoFrameRef& depthFrame, int pixelX, int pixelY)
 	{
 		openni::VideoMode videoMode = depthStream.getVideoMode();
@@ -195,14 +182,14 @@ private:
 			cv::Point(src.cols / 2, src.rows), cv::Scalar(255, 255, 255), 1);
 	}
 
-	openni::Device device;              // �g�p����f�o�C�X
-	openni::VideoStream colorStream;    // �J���[�X�g���[��
-	openni::VideoStream depthStream;    //  Depth�X�g���[��
+	openni::Device device;              // センサー情報が格納される
+	openni::VideoStream colorStream;    // カラー
+	openni::VideoStream depthStream;    // Depth
 	openni::VideoFrameRef depthFrame;
 	openni::VideoFrameRef colorFrame;
 public:
-	cv::Mat colorImage;                 // �\���pDepth�f�[�^
-	cv::Mat depthImage;                 // �\���pColor�f�[�^
+	cv::Mat colorImage;                 // カラー画像
+	cv::Mat depthImage;                 // Depth画像
 };
 
 #pragma endregion
@@ -211,14 +198,12 @@ void measureF(std::vector<std::vector<float>> res, std::string c, float wz)
 {
 	float g = 0;
 	int i = 0;
-
-	// �t�@�C�����̕ϐ���p��
 	struct tm stm;
 	time_t tim;
 	char s[100];
 
 	if (res.size() > 1) {
-		//- �t�@�C���o�͏��� ------------------------------
+		//- 結果をファイル格納する準備 ----------------------
 		tim = time(NULL);
 		localtime_s(&stm, &tim);
 		int status = _mkdir(".\\results");
@@ -232,15 +217,15 @@ void measureF(std::vector<std::vector<float>> res, std::string c, float wz)
 		res.erase(res.begin());
 		for (const auto& vect : res)
 		{
-			ofs << " ����    : " << vect[0] << " [mm]" << std::endl;
-			ofs << "     �덷: " << vect[1] << " [mm]" << std::endl;
+			ofs << " 長さ    : " << vect[0] << " [mm]" << std::endl;
+			ofs << "     誤差: " << vect[1] << " [mm]" << std::endl;
 			g += vect[1];
 			i++;
 
 		}
 		if (i != 0)
 			g = g / i;
-		ofs << "\n�덷����: " << g << " [mm]\n���s��:" << i << " [��]\n\n";
+		ofs << "\n誤差平均: " << g << " [mm]\n試行回数:" << i << " [��]\n\n";
 		if (!status)
 			std::cout << "mkdir results.\n";
 		std::cout << "Wrote results in " << s << std::endl;
@@ -248,7 +233,7 @@ void measureF(std::vector<std::vector<float>> res, std::string c, float wz)
 }
 
 //-------------------------------------------------------------------------------------------------
-// Main�֐�
+// Main
 int main(int argc, const char* argv[])
 {
 	cv::String winName = "ColorStream";
@@ -257,11 +242,8 @@ int main(int argc, const char* argv[])
 	std::vector<std::vector<float>> res_x = {};
 	std::vector<std::vector<float>> res_y = {};
 
-	// ���N���b�N�C�x���g�̃t���O
 	bool isLeftDown = false;
 	try {
-
-		// �Z���T�[������������
 		DepthSensor sensor;
 		sensor.depthInitialize();
 		float bX, bY, bZ;
@@ -287,7 +269,6 @@ int main(int argc, const char* argv[])
 				break;
 		}
 
-		// ���C�����[�v
 		while (1) {
 			sensor.updateDepthFrame();
 			sensor.updateColorFrame();
@@ -295,24 +276,19 @@ int main(int argc, const char* argv[])
 			cv::imshow(winName, inputImage);
 
 
-			// �}�E�X�R�[���o�b�N�̐ݒ�
 			cv::setMouseCallback(winName, CallBackFunction, &mEvnt);
-			// �L�[���͂��擾
 			const int key = cv::waitKey(1);
 			float wx, wy, wz;
 
 
-
-			// ���N���b�N����������\��
 			if (mEvnt.getEventType() == cv::EVENT_LBUTTONDOWN)
 			{
-				// �N���b�N������ɑ΂��ďo�͂���
 				if (!isLeftDown)
 				{
-					int x = mEvnt.getX(), y = mEvnt.getY();					  // �}�E�X��xy���W�擾
-					int ocx = y, ocy = x;									  // OpenCV�p�ɍ��W�ϊ�
+					int x = mEvnt.getX(), y = mEvnt.getY();					  // クリック座標
+					int ocx = y, ocy = x;									  // OpenCV座標系
 
-					// �N���b�N��̃}�E�X�̍��W���o��
+					// クリックされたピクセル
 					std::cout << "Pixel : [ ";
 					DigitAligment(x, 4, 1);
 					std::cout << ", ";
@@ -321,7 +297,6 @@ int main(int argc, const char* argv[])
 
 					sensor.getDepthToWorld(x, y, wx, wy, wz);
 
-					// ���[���h���W�n���o��
 					std::cout << "World-------------------------" << std::endl;
 					std::cout << " X   : ";
 					DigitAligment(wx, false);
@@ -380,11 +355,10 @@ int main(int argc, const char* argv[])
 					bY = wy;
 					bZ = wz;
 
-
 					isLeftDown = true;
 				}
 			}
-			// q�L�[�������ꂽ��I��
+			// qが押された処理
 			else if (key == 'q')
 			{
 				sensor.getDepthToWorld(sensor.colorImage.cols / 2, sensor.colorImage.rows / 2, wx, wy, wz);
@@ -398,7 +372,6 @@ int main(int argc, const char* argv[])
 				cv::waitKey(0);
 				break;
 			}
-			// �����Ȃ���΍��N���b�N�C�x���g�̃t���O��������
 			else
 			{
 				isLeftDown = false;
